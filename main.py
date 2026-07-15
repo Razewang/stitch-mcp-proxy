@@ -8,7 +8,7 @@ from fastmcp.client.transports import StreamableHttpTransport
 from fastmcp.server import create_proxy
 
 UPSTREAM_URL = "https://stitch.googleapis.com/mcp"
-API_KEY_ENV = "STITCH_API_KEY"
+API_KEY_ENV = "GOOGLE_API_KEY"
 
 
 def _required_env(name: str) -> str:
