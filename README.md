@@ -19,7 +19,7 @@ https://<server-name>.fastmcp.app/mcp
 真实密钥不会写入源码或 `.env.example`。部署环境必须提供：
 
 ```text
-STITCH_API_KEY=<your-google-stitch-api-key>
+GOOGLE_API_KEY=<your-google-stitch-api-key>
 ```
 
 请把它配置为 Horizon 部署环境中的 Secret/环境变量，不要提交到 GitHub。由于代理 URL 的使用者会间接消耗这把 Google API Key，部署时建议启用 Horizon Authentication，不要把未鉴权地址公开传播。
@@ -49,7 +49,7 @@ https://<server-name>.fastmcp.app/mcp
 先在当前终端设置环境变量，然后运行：
 
 ```powershell
-$env:STITCH_API_KEY = "your-key"
+$env:GOOGLE_API_KEY = "your-key"
 fastmcp run main.py:mcp --transport http --port 8000
 ```
 
@@ -68,7 +68,7 @@ ChatGPT / MCP 客户端
         v
 Horizon: /mcp
         |
-        | X-Goog-Api-Key: 从 STITCH_API_KEY 注入
+        | X-Goog-Api-Key: 从 GOOGLE_API_KEY 注入
         v
 https://stitch.googleapis.com/mcp
 ```
