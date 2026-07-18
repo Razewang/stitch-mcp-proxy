@@ -58,8 +58,16 @@ upstream_transport = StreamableHttpTransport(
     headers=upstream_headers,
 )
 
-# Prefect Horizon entrypoint: main.py:mcp
+# create_proxy enables forwarding of the downstream Authorization header by
+# default. Stitch authenticates with X-Goog-Api-Key, so a Horizon/ChatGPT bearer
+# token must not be sent to the Google upstream alongside this service key.
 mcp = create_proxy(upstream_transport, name="Google Stitch MCP Proxy")
+upstream_transport.forward_incoming_headers = False
+
+logger.warning(
+    "Stitch proxy upstream Authorization forwarding disabled; "
+    "only the configured X-Goog-Api-Key is sent upstream."
+)
 
 
 if __name__ == "__main__":
