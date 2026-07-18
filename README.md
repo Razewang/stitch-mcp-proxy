@@ -74,3 +74,41 @@ https://stitch.googleapis.com/mcp
 ```
 
 该代理会转发上游 MCP 的工具、资源、提示和工具调用，而不是重新手工实现 Stitch 工具。
+
+## 排查上游 401
+
+如果 Horizon 中调用 Stitch 工具时返回 `401 Unauthorized`，先确认错误来自
+`https://stitch.googleapis.com/mcp`，而不是 Horizon 的访问认证。
+
+### 防止错误转发下游 Bearer Token
+
+FastMCP 的 `create_proxy(...)` 默认会将下游请求中的
+`Authorization` 头转发给上游。对受 Horizon Authentication 保护的部署，
+这个头是 Horizon/客户端的 Bearer token，并不属于 Google Stitch。
+
+如果把它与 `X-Goog-Api-Key` 一起发送给 Stitch，Stitch 可能优先处理无效的
+Bearer token 并返回 401。此项目在创建代理后明确关闭该行为：
+
+```python
+mcp = create_proxy(upstream_transport, name="Google Stitch MCP Proxy")
+upstream_transport.forward_incoming_headers = False
+```
+
+不要移除这项设置。上游 Stitch 请求应只使用服务器端配置的
+`X-Goog-Api-Key`；客户端不应提供 Google API key，也不应将 Horizon 的访问
+token 用作 Stitch 凭据。
+
+### 安全诊断日志
+
+启动时，服务器会输出以下脱敏信息：
+
+```text
+Stitch proxy upstream authentication configured:
+fastmcp_version=... key_length=... key_sha256_prefix=... header_present=True
+```
+
+它不记录完整密钥。若直连 Stitch 可用、代理仍返回 401，可将本地 key 计算出的
+SHA-256 前 8 位与 `key_sha256_prefix` 比较，以确认 Horizon 使用的是同一把 key。
+不要在日志、Issue、截图或聊天中公开完整 key。
+
+依赖固定为 `fastmcp==3.4.4`，以避免重部署时因浮动的 FastMCP 版本改变代理行为。
